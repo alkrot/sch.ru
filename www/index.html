@@ -1,0 +1,172 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Расписание НЧФ КАИ</title>
+    <noscript><meta http-equiv="refresh" content="0; URL=pda/nojs.php"></noscript>
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+    <link rel="apple-touch-icon" sizes="180x180" href="http://shedule.96.lt/image/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="http://shedule.96.lt/image/icons/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://shedule.96.lt/image/icons/favicon-16x16.png" sizes="16x16">
+    <link rel="manifest" href="http://shedule.96.lt/image/icons/manifest.json">
+    <link rel="mask-icon" href="http://shedule.96.lt/image/icons/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="shortcut icon" href="http://shedule.96.lt/image/icons/favicon.ico">
+    <meta name="msapplication-config" content="http://shedule.96.lt/image/icons/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="yandex-verification" content="d26d966c4e509412" />
+    <meta name='wmail-verification' content='f232cb966f0df312e39d58262a309aa2' />
+    <meta name='keywords' content='расписание нчф каи онлайн посмотреть'/>
+    <meta name='description' content='Онлайн просмотр расписания НЧФ КНИТУ-КАИ'/>
+    <!-- Link Swiper's CSS -->
+    <link rel="stylesheet" href="http://shedule.96.lt/dist/css/swiper.min.css">
+    <link rel="stylesheet" href="css/style-v5.css">
+    <script src="http://shedule.96.lt/js/cookie.js"></script>
+    <script src="js/detect.js"></script>
+    <style>
+        #loading{position:absolute;top:30%;width:100%;text-align:center;z-index:1000;display:none;}
+        #shb{border:none;font-size:13pt;color:#7e7e7e;cursor:pointer;background-color:  #ebebeb;font-style:italic;}
+    </style>
+</head>
+<body>
+<script>
+    var infouser = getBrowser();
+    var param = location.hash;
+    if(infouser.browser == 'ie' && infouser.versionShort < 10 || parseInt(getAndroidVersion()) < 4) document.location = "/pda/" + param;
+</script>
+<div id="loading"><image src="image/load.gif"></div>
+<div id="newShedule">Показать новое</div>
+ <!-- Swiper --> <div class="swiper-container"><center><input type="text" placeholder="Номер группы" id="numbergroup"><button id="shb" onclick="shareGroup()">Поделиться</button></center><div class="swiper-wrapper"> <div class="swiper-slide">1</div> <div class="swiper-slide">2</div> <div class="swiper-slide">3</div> <div class="swiper-slide">4</div> <div class="swiper-slide">5</div> <div class="swiper-slide">6</div> </div> <!-- Add Pagination --> <div class="swiper-pagination"></div> </div> 
+ <!-- Swiper JS --> <script src="dist/js/swiper.min.js"></script><script src="js/jq-min.js"></script> <!-- Initialize Swiper --> <script>
+ 
+var swiper = new Swiper('.swiper-container', {
+    pagination: '.swiper-pagination',
+    paginationClickable: true,
+    keyboardControl: true,
+    mousewheelControl: true
+});
+var daysOfWeek = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
+$("#numbergroup").keyup(function(e) {
+    if (e.keyCode == 13) {
+        var number = this.value;
+        var curs = number[0];
+        if(number[0] == '#'){
+            number = number.substr(1);
+            curs = number[0];
+            getShedule(number,curs,false,false);
+            return;
+        }
+        getShedule(number, curs,false,true);
+    }
+});
+
+function shareGroup(){
+    new Clipboard('button', {
+    text: function(trigger) {
+        var mySwiper = $('.swiper-container')[0].swiper;
+        var day = mySwiper.activeIndex;
+        var newWeek = document.getElementById('newShedule').innerHTML == "Показать новое" ? 'c':'n';
+        var number =  document.getElementById('numbergroup').value;
+        return "http://shedule.96.lt/" + ((number[0] == "#") ? number : "#" + number) + '&' + newWeek + '&' + day;
+    }
+    }).on('success', function(e) {
+        console.info('Действие:', e.action);
+        console.info('Текст:', e.text);
+        console.info('Триггер:', e.trigger);
+        e.clearSelection();
+        alert('Ссылка на расписание скопированна');
+    });
+}
+
+$("#newShedule").click(function(){
+    var number = document.getElementById("numbergroup").value;
+    var newNumber = (number[0] == "#") ? number.replace('#','') : number;
+    var curs = newNumber[0];
+    if(this.innerHTML == "Вернуть старое"){
+        getShedule(newNumber,curs,false);
+        this.innerHTML = "Показать новое";
+    }else{
+        getShedule(newNumber,curs,true);
+        this.innerHTML = "Вернуть старое";
+    }
+});
+
+function getShedule(number, curs,nextWeek,save,cDay) {
+    $("#loading").css("display","block");
+    var options = {
+        path: "/",
+        expires: 864000
+    };
+    $.get('/php/check.php', {
+        curs: (nextWeek) ? curs +'n' : curs
+    }, function(data) {
+        data = JSON.parse(data);
+        if (data['error']) error(data['error']);
+        else {
+            if (data[number]) {
+               setSwiper(data[number], curs,nextWeek,cDay);
+               if(save) setCookie("numberGroup",number,options);
+            } else error("Такой группы нет");
+        }
+        $("#loading").css("display","none");
+    })
+}
+
+function error(msg) {
+    for (var i = 0; i < 6; i++) $(".swiper-slide")[i].innerHTML = "<h1 style='color: red;'>" + msg + "<h2>"
+};
+
+function setSwiper(shedule, curs,nextWeek,cDay) {
+    var i = 0;
+    for (var date in shedule) {
+        var table = "<table border='1'>";
+        table += "<tr><th colspan='3'>" + daysOfWeek[i] + ", " + shedule[date].date + "</tr>";
+        for (var time in shedule[date]['time']) {
+            var name = (shedule[date]['time'][time].name == undefined) ? "" : shedule[date]['time'][time].name;
+            var cabinet = (shedule[date]['time'][time].cabinet == undefined) ? "" : shedule[date]['time'][time].cabinet;
+            table += "<tr>\n<td>" + time + "</td>\n" + "<td>" + name + "</td>\n" + "<td>" + cabinet + "</td>\n" + "</tr>"
+        }
+        table += "\n</table>";
+        $(".swiper-slide")[i].innerHTML = table;
+        i++
+    }
+    var date = new Date();
+    var mySwiper = $('.swiper-container')[0].swiper;
+    if(cDay){
+        mySwiper.slideTo(cDay);
+        return false;
+    }
+    var day = date.getDay() - 1;
+    if (date.getDay() == 0) {
+        day = 0
+    } else if (curs % 2 > 0 && date.getHours() > 13) {
+        day = (day < 5) ? date.getDay() : 0
+    } else if (curs % 2 == 0 && date.getHours() > 17) {
+        day = (day < 5) ? date.getDay() : 0
+    }
+    if(nextWeek) mySwiper.slideTo(0); else mySwiper.slideTo(day);
+}
+$(document).ready(function() {
+    var date = new Date();
+    var showbtn = date.getDay() === 5 || date.getDay() === 6 && date.getHours() <= 17;
+    if(showbtn) $("#newShedule").css("display","block");
+    var sharegroup = location.href.split('#')[1];
+    if(sharegroup){
+        var mass = sharegroup.split('&');
+        document.getElementById("numbergroup").value = "#"+mass[0];
+        var newWeek = (mass[1] == 'n' && showbtn) ? true : false;
+        if(newWeek) document.getElementById('newShedule').innerText = 'Вернуть старое';
+        var currentDay = mass[2];
+        getShedule(mass[0],mass[0][0],newWeek,false,currentDay);
+        location.hash ="";
+        return false;
+    }
+    var number = getCookie('numberGroup');
+    if (number == undefined) return false;
+    document.getElementById("numbergroup").value = number;
+    var curs = number[0];
+    getShedule(number, curs,false); 
+});
+</script>
+<script src="http://shedule.96.lt/js/clipboard.min.js"></script>
+</body>
+</html>

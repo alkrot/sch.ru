@@ -1,0 +1,24 @@
+html,body{position:relative;height:100%}body{background:#eee;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;color:#000;margin:0;padding:0}input[type=text]{height:20px;border:2px solid lightgray;text-align:center;font-size:1.5em;border-radius:4px;outline:none;margin:2px}input[type=text]:focus{border:2px solid #ADD8E6}.swiper-container{width:100%;height:100%}.swiper-slide{text-align:center;font-size:18px;background:#fff;display:flex;-webkit-box-pack:center;-ms-flex-pack:center;-webkit-justify-content:center;justify-content:center;-webkit-box-align:center;-ms-flex-align:center;-webkit-align-items:center;align-items:center}.swiper-slide table{border-collapse:collapse;width:100%;height:100%}.swiper-slide table th{height:5%;background:#F5F5F5}
+
+#newShedule{
+	display:block;
+	background-color:#87CEFA;
+	font-size:1.5em;
+	cursor:pointer; 
+	padding: 5px;
+	position: absolute;
+	width: 99.41%;
+	text-align: center;
+	z-index: 500;
+	top: 89.5%;
+	opacity: 0.85;
+	display: none;
+}
+
+#newShedule:hover{
+	background-color:lightblue;
+}
+
+#shb:hover {
+	background-color: whitesmoke;
+}

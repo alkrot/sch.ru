@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd">
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="format-detection" content="telephone=no" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="MobileOptimized" content="176" />
+		<meta name="HandheldFriendly" content="True" />
+		<title>Расписание НЧФ КНИТУ-КАИ</title>
+		<noscript><meta http-equiv="refresh" content="0; URL=nojs.php"></noscript>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js"></script>
+		<script src="../js/cookie.js"></script>
+		<style>
+		html,body{font-size:large;margin:0;text-align:center}#ng{margin-right:5px;word-wrap:break-word;text-align:center}.sh{border:1px solid black;margin-top:3px;padding-top:3px;margin-right:5px;margin-left:5px;padding-bottom:3px;width:auto}span{color:gray}.error{border-color:red}#footer{border-style:solid none none none;border-width:2px;border-color:gray;margin-top:15px}.setDay{background:#DCCB98}
+		</style>
+	</head>
+	<body>
+		</script>
+			<!--LiveInternet counter--><script type="text/javascript">
+			document.write("<a href='//www.liveinternet.ru/click' "+
+			"target=_blank><img style='display: none;' src='//counter.yadro.ru/hit?t26.3;r"+
+			escape(document.referrer)+((typeof(screen)=="undefined")?"":
+			";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?
+			screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
+			";h"+escape(document.title.substring(0,80))+";"+Math.random()+
+			"' alt='' title='LiveInternet: показано число посетителей за"+
+			" сегодня' "+
+			"border='0' width='88' height='15'><\/a>")
+		</script><!--/LiveInternet-->
+		<script type="text/javascript" src="http://qoo.by/counter.js"></script>
+		<div>
+			<span>Номер группы: </span><input id="ng" type="text" name="numbergroup">
+			<button onclick="getload('')">Текущие</button>
+		</div>
+		<div id = "shedule"></div>
+		<a href="javascript:void(0)" id="btnNew" onclick="getload('n')">Показать новое</a>
+		<div id="footer"><span>Расписание для старых мобильников и IE</span></div>
+		<script>
+			var daysru={Monday:"\u041f\u043e\u043d\u0435\u0434\u0435\u043b\u044c\u043d\u0438\u043a",Tuesday:"\u0412\u0442\u043e\u0440\u043d\u0438\u043a",Wednesday:"\u0421\u0440\u0435\u0434\u0430",Thursday:"\u0427\u0435\u0442\u0432\u0435\u0440\u0433",Friday:"\u041f\u044f\u0442\u043d\u0438\u0446\u0430",Saturday:"\u0421\u0443\u0431\u0431\u043e\u0442\u0430"};
+function getload(a){var c=document.getElementById("ng").value;document.getElementById("btnNew").style.cssText=a?"font-size: 0;":"font-size: 100%";"#"===c.substr(0,1)?(c=c.substr(1,3),loadShedule(c,a,!0)):loadShedule(c,a)}
+function loadShedule(a,c,e,l){if(a){document.getElementById("shedule").innerText="\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430...";var b=new XMLHttpRequest,d="curs="+a.substring(0,1);c&&(d+="n");b.open("GET","../php/check.php?"+d,!1);b.send();if(200!=b.status)alert("\u041e\u0448\u0438\u0431\u043a\u0430 "+b.status+": "+b.statusText);else{c=document.getElementById("shedule");b=JSON.parse(b.responseText);if(b.error)return messageError(b.error);b=b[a];if(!b)return messageError("\u0422\u0430\u043a\u043e\u0439 \u0433\u0440\u0443\u043f\u043f\u044b \u043d\u0435\u0442");
+var d="",n=new Date,m=1,g;for(g in b){var f=!e&&m===n.getDay()&&17>n.getHours()||parseInt(l)+1===m?"setDay":"";m++;var d=d+("<div class='sh "+f+"'>"+daysru[g]+" ["+b[g].date+"]<br/>"),h;for(h in b[g].time)var f=b[g].time[h].name,k=b[g].time[h].cabinet,f=f?" | "+f:"",k=k?" | "+k:"",d=d+(0<f.length?"{"+h+f+k+"}<br/>":"");d+="</div>"}c.innerHTML=d;l={path:"/",expires:864E3};e||setCookie("numberGroup",a,l)}}}
+function messageError(a){document.getElementById("shedule").innerHTML="<div class='sh error'>"+a+"</div>";return!1}
+onload=function(){if(1<location.hash.length){var a=location.hash.split("&");console.log(a);var c=a[0].substr(1,3),e=new Date;document.getElementById("btnNew").style.cssText=a[1]?"font-size: 0;":"font-size: 100%";e="n"===a[1]&&5<=e.getDay&&18>e.getHours()?!0:!1;document.getElementById("ng").value="#"+c;loadShedule(c,e,!0,a[2]);location.hash=""}else if(a=getCookie("numberGroup"))document.getElementById("ng").value=a,loadShedule(a)};
+		</script>
+	</body>
+</html>
