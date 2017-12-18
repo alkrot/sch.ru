@@ -1,28 +1,52 @@
 ﻿<?
-	
-	// В PHP 4.1.0 и более ранних версиях следует использовать $HTTP_POST_FILES
-	// вместо $_FILES.
 
-	$uploaddir = '../csv/';
-	$uploadfile = $uploaddir . basename($_FILES['userfile']['name']);
-	echo '<pre>';
-	if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
-		echo "Файл корректен и был успешно загружен.\n";
+	require 'vendor/PHPExcel.php';
 	
-		$file_name = $uploadfile;
-		$file_csv = iconv("windows-1251","utf-8",file_get_contents($file_name));
-		$arr_parse = explode("\n",$file_csv);
+	$dirXl = '../xl';
+	$dirCsv = 'csv/';
+	$files = array_filter(scandir($dirXl), function($item) {
+		return !is_dir($dirXl . $item);
+	});
+	
+	foreach($files as $file){
+		$path = $dirXl.'/'.$file;
+		$pathCsv = $dirCsv.reset(explode('.',$file)).".csv";
+		convertXLStoCSV($path,$pathCsv);
+		parseCsv($pathCsv);
+	}
+	//Usage:
+	//convertXLStoCSV('1kursnew.xlsx','output.csv');
+	 
+	function convertXLStoCSV($infile,$outfile)
+	{
+		$fileType = PHPExcel_IOFactory::identify($infile);
+		$objReader = PHPExcel_IOFactory::createReader($fileType);
+	 
+		$objReader->setReadDataOnly(true);		
+		$objPHPExcel = $objReader->load($infile);    
+	 
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
+		$objWriter->setDelimiter(';');
+		$objWriter->setEnclosure('');
+        $objWriter->setLineEnding("\r\n");
+		$objWriter->save($outfile);
+	}
+	
+	function parseCsv($file_name){
+		
+		$file_csv = str_replace('"','',file_get_contents($file_name)); 
+		$arr_parse = explode("\r\n",$file_csv);
 		for($i = 0; $i < count($arr_parse); $i++){
 			$arr_parse[$i] = explode(";",$arr_parse[$i]);
 		}
-	
+
 		$json_arr;
 		$memmory = "";
 		$time = "";
 		$group;
 		$cabinet = "";
 		$number = 0;
-	
+
 		$week = array(
 			"Monday"=>"ПОНЕДЕЛЬНИК",
 			"Tuesday"=>"ВТОРНИК",
@@ -30,7 +54,7 @@
 			"Thursday"=>"ЧЕТВЕРГ",
 			"Friday"=>"ПЯТНИЦА",
 			"Saturday"=>"СУББОТА");
-	
+
 		for($i = 0; $i < count($arr_parse);$i++){
 			for($j = 0; $j < count($arr_parse[$i]);$j++){
 				$value = $arr_parse[$i][$j];
@@ -40,58 +64,63 @@
 					$json_arr[$value] = "";
 				}
 			
-				if($time && $memmory && $j % 2 === 0 && $j != 0){
+				if($time && $memmory && $j % 2 === 1 && $j != 0){
 					$day = array_search($memmory,$week);
 					
 					switch($j){
-						case 2:
+						case 3:
 							if(strlen($value)){
 								setSubjects($arr_parse,$i,$j,$value,0,$day,$time,$json_arr,$group);
 							}
 						break;
-						case 4:
-							if(strlen($value)){
-								setSubjects2($arr_parse,$i,$j,$value,0,$day,$time,$json_arr,$group);
-							}
-						break;
-						case 6:
-							if(strlen($value)){
-								setSubjects($arr_parse,$i,$j,$value,1,$day,$time,$json_arr,$group);
-							}
-						break;
-						case 8:
+						case 5:
 							if(strlen($value)){
 								setSubjects2($arr_parse,$i,$j,$value,1,$day,$time,$json_arr,$group);
 							}
 						break;
-						case 10:
+						case 7:
 							if(strlen($value)){
-								setSubjects($arr_parse,$i,$j,$value,2,$day,$time,$json_arr,$group);
+								setSubjects($arr_parse,$i,$j,$value,1,$day,$time,$json_arr,$group);
 							}
 						break;
-						case 12:
+						case 9:
 							if(strlen($value)){
 								setSubjects2($arr_parse,$i,$j,$value,2,$day,$time,$json_arr,$group);
 							}
 						break;
-						case 14:
+						case 11:
 							if(strlen($value)){
-								setSubjects($arr_parse,$i,$j,$value,3,$day,$time,$json_arr,$group);
+								setSubjects($arr_parse,$i,$j,$value,2,$day,$time,$json_arr,$group);
 							}
 						break;
-						case 16:
+						case 13:
 							if(strlen($value)){
 								setSubjects2($arr_parse,$i,$j,$value,3,$day,$time,$json_arr,$group);
 							}
 						break;
-						case 18:
+						case 15:
+							if(strlen($value)){
+								setSubjects($arr_parse,$i,$j,$value,3,$day,$time,$json_arr,$group);
+							}
+						break;
+						case 17:
+							if(strlen($value)){
+								setSubjects2($arr_parse,$i,$j,$value,4,$day,$time,$json_arr,$group);
+							}
+						break;
+						case 19:
 							if(strlen($value)){
 								setSubjects($arr_parse,$i,$j,$value,4,$day,$time,$json_arr,$group);
 							}
 						break;
-						case 20:
+						case 21:
 							if(strlen($value)){
-								setSubjects2($arr_parse,$i,$j,$value,4,$day,$time,$json_arr,$group);
+								setSubjects2($arr_parse,$i,$j,$value,5,$day,$time,$json_arr,$group);
+							}
+						break;
+						case 23:
+							if(strlen($value)){
+								setSubjects($arr_parse,$i,$j,$value,5,$day,$time,$json_arr,$group);
 							}
 						break;
 					}
@@ -126,13 +155,8 @@
 		$path = "../../json/".$file_name[0].".json";
 		if(file_exists($path)) $path = "../../json/".$file_name[0]."n.json";
 		$fpc = file_put_contents($path,$json);
-		var_dump($fpc);
-		echo "<a href='../parse.html'>Вернуться</a> ";
-		echo "<a href='../index.html'>Главная</a>";
-	} else {
-		echo "Возможная атака с помощью файловой загрузки!\n";
 	}
-	
+		
 	function setWeekDay($value,$weekDay,$week,&$memmory,&$json_arr){
 			$memmory = $week[$weekDay];
 			$date = end(explode(' ',trim($value)));
